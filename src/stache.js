@@ -1,6 +1,6 @@
 export default function stache(source) {
     let tpl;
-    source = source.replace(/{{(.+?)}}/g, (all, code) => `',(${code}),'`);
+    source = source.replace(/{{\s*(.+?)\s*}}/g, (all, code) => `',(${code}),'`);
     return (data) => {
 		if (!tpl) {
             tpl = new Function(`
