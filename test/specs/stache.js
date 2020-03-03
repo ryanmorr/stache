@@ -171,4 +171,56 @@ describe('stache', () => {
         });
         expect(result3.trim()).to.equal('20');
     });
+
+    it('should support a complex if directive', () => {
+        const tpl = stache(`
+            {{if !foo || (bar >= 10 && baz.startsWith('foo'))}}
+                {{100}}
+            {{else}}
+                {{200}}
+            {{/if}}
+        `);
+
+        const result1 = tpl({
+            foo: true,
+            bar: 10,
+            baz: 'foo'
+        });
+        expect(result1.trim()).to.equal('100');
+
+        const result2 = tpl({
+            foo: true,
+            bar: 11,
+            baz: 'fooo'
+        });
+        expect(result2.trim()).to.equal('100');
+
+        const result3 = tpl({
+            foo: true,
+            bar: 20,
+            baz: 'foo bar'
+        });
+        expect(result3.trim()).to.equal('100');
+
+        const result4 = tpl({
+            foo: false,
+            bar: 10,
+            baz: 'foo'
+        });
+        expect(result4.trim()).to.equal('100');
+
+        const result5 = tpl({
+            foo: true,
+            bar: 5,
+            baz: 'foo'
+        });
+        expect(result5.trim()).to.equal('200');
+
+        const result6 = tpl({
+            foo: true,
+            bar: 10,
+            baz: 'fo'
+        });
+        expect(result6.trim()).to.equal('200');
+    });
 });
