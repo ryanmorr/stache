@@ -22,6 +22,19 @@ describe('stache', () => {
         expect(result).to.equal('Hello World!');
     });
 
+    it('should support multiline templates', () => {
+        const tpl = stache(`
+            {{foo}}
+        `);
+
+        const result = tpl({
+            foo: 'bar'
+        });
+
+        expect(result.includes('\n')).to.equal(true);
+        expect(result.trim()).to.equal('bar');
+    });
+
     it('should support expressions', () => {
         const tpl = stache('{{ foo ? bar.toUpperCase() : add(baz + qux) }}');
 
