@@ -21,4 +21,26 @@ describe('stache', () => {
 
         expect(result).to.equal('Hello World!');
     });
+
+    it('should support expressions', () => {
+        const tpl = stache('{{ foo ? bar.toUpperCase() : add(baz + qux) }}');
+
+        const result1 = tpl({
+            foo: true,
+            bar: 'abc',
+            baz: 5,
+            qux: 2,
+            add: (val) => val + 10
+        });
+        expect(result1).to.equal('ABC');
+
+        const result2 = tpl({
+            foo: false,
+            bar: 'abc',
+            baz: 5,
+            qux: 2,
+            add: (val) => val + 10
+        });
+        expect(result2).to.equal('17');
+    });
 });
