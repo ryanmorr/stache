@@ -2,6 +2,10 @@ import { expect } from 'chai';
 import stache from '../../src/stache';
 
 describe('stache', () => {
+    function collapseWhitespace(str) {
+        return str.trim().replace(/[\s\xa0]+/g, ' ').replace(/^\s+|\s+$/g, '');
+    }
+
     it('should interpolate a value', () => {
         const tpl = stache('Hello {{ value }}!');
 
@@ -222,5 +226,94 @@ describe('stache', () => {
             baz: 'fo'
         });
         expect(result6.trim()).to.equal('200');
+    });
+
+    it('should support an each directive', () => {
+        const tpl = stache(`
+            {{each items as item}}
+                {{item}}
+            {{/each}}
+        `);
+
+        const result1 = tpl({
+            items: [1, 2, 3]
+        });
+        expect(collapseWhitespace(result1)).to.equal('1 2 3');
+
+        const result2 = tpl({
+            items: ['a', 'b', 'c', 'd', 'e']
+        });
+        expect(collapseWhitespace(result2)).to.equal('a b c d e');
+    });
+
+    it('should support an each directive with the index', () => {
+        const tpl = stache(`
+            {{each items as item, i}}
+                {{i}}: {{item}}
+            {{/each}}
+        `);
+
+        const result1 = tpl({
+            items: [10, 20, 30]
+        });
+        expect(collapseWhitespace(result1)).to.equal('0: 10 1: 20 2: 30');
+
+        const result2 = tpl({
+            items: ['a', 'b', 'c', 'd', 'e']
+        });
+        expect(collapseWhitespace(result2)).to.equal('0: a 1: b 2: c 3: d 4: e');
+    });
+
+    it('should support nested each directives', () => {
+        const tpl = stache(`
+            {{each items as numbers}}
+                {{each numbers as num}}
+                    {{num}}
+                {{/each}}
+            {{/each}}
+        `);
+
+        const result1 = tpl({
+            items: [
+                [1, 2, 3],
+                [10, 20]
+            ]
+        });
+        expect(collapseWhitespace(result1)).to.equal('1 2 3 10 20');
+
+        const result2 = tpl({
+            items: [
+                ['a', 'b', 'c', 'd', 'e'],
+                ['f', 'g']
+            ]
+        });
+        expect(collapseWhitespace(result2)).to.equal('a b c d e f g');
+    });
+
+    it('should support a complex each directive', () => {
+        const tpl = stache(`
+            {{each Object.entries(data) as [key, value]}}
+                {{key}}: {{value}}
+            {{/each}}
+        `);
+
+        const result1 = tpl({
+            data: {
+                foo: 1,
+                bar: 2,
+                baz: 10,
+                qux: 50
+            }
+        });
+        expect(collapseWhitespace(result1)).to.equal('foo: 1 bar: 2 baz: 10 qux: 50');
+
+        const result2 = tpl({
+            data: {
+                a: 'foo',
+                b: 'bar',
+                c: 'baz'
+            }
+        });
+        expect(collapseWhitespace(result2)).to.equal('a: foo b: bar c: baz');
     });
 });
