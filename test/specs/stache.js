@@ -36,19 +36,6 @@ describe('stache', () => {
         ]);
     });
 
-    it('should support leading and trailing spaces within delimiters', () => {
-        const tpl = stache('Hello {{ value  }}!');
-
-        const result = tpl({
-            value: 'World'
-        });
-
-        expectResult(result, [
-            ['Hello ', '!'],
-            ['World']
-        ]);
-    });
-
     it('should support multiline templates', () => {
         const tpl = stache(`
             {{foo}}
@@ -456,6 +443,27 @@ describe('stache', () => {
         expectResult(result2, [
             ['', '', '', '', '', ''],
             ['bar', 'foo', 'bar', 'bar', 'foo']
+        ]);
+    });
+
+    it('should support leading and trailing spaces within delimiters', () => {
+        const tpl = stache(`
+            {{ each items as item }}
+                {{ if item > 10  }}
+                    {{item + 5 }}
+                {{  else}}
+                    {{  item - 5    }}
+                {{/if}}
+            {{  /each   }}
+        `);
+
+        const result = tpl({
+            items: [5, 20, 10, 15, 6, 8]
+        });
+
+        expectResult(result, [
+            ['', '', '', '', '', '', ''],
+            [0, 25, 5, 20, 1, 3]
         ]);
     });
 });
