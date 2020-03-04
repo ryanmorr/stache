@@ -2,8 +2,25 @@ import { expect } from 'chai';
 import stache from '../../src/stache';
 
 describe('stache', () => {
-    function collapseWhitespace(str) {
-        return str.trim().replace(/[\s\xa0]+/g, ' ').replace(/^\s+|\s+$/g, '');
+    function normalizeWhitespace(str) {
+        return str.replace(/(\r\n|\r|\n)+/g, '').replace(/\t/g, '').replace(/\s{2,}/g, ' ');
+    }
+
+    function normalize(data) {
+        if (typeof data === 'string') {
+            if ((/^[\s\n\t\r]+$/).test(data)) {
+                return '';
+            }
+            return normalizeWhitespace(data);
+        }
+        if (Array.isArray(data)) {
+            return data.map((val) => normalize(val));
+        }
+        return data;
+    }
+
+    function expectResult(data, expected) {
+        expect(normalize(data)).to.deep.equal(expected);
     }
 
     it('should interpolate a value', () => {
@@ -13,7 +30,10 @@ describe('stache', () => {
             value: 'World'
         });
 
-        expect(result).to.equal('Hello World!');
+        expectResult(result, [
+            ['Hello ', '!'],
+            ['World']
+        ]);
     });
 
     it('should support leading and trailing spaces within delimiters', () => {
@@ -23,7 +43,10 @@ describe('stache', () => {
             value: 'World'
         });
 
-        expect(result).to.equal('Hello World!');
+        expectResult(result, [
+            ['Hello ', '!'],
+            ['World']
+        ]);
     });
 
     it('should support multiline templates', () => {
@@ -35,8 +58,10 @@ describe('stache', () => {
             foo: 'bar'
         });
 
-        expect(result.includes('\n')).to.equal(true);
-        expect(result.trim()).to.equal('bar');
+        expectResult(result, [
+            ['', ''],
+            ['bar']
+        ]);
     });
 
     it('should support expressions', () => {
@@ -49,7 +74,10 @@ describe('stache', () => {
             qux: 2,
             add: (val) => val + 10
         });
-        expect(result1).to.equal('ABC');
+        expectResult(result1, [
+            ['', ''],
+            ['ABC']
+        ]);
 
         const result2 = tpl({
             foo: false,
@@ -58,7 +86,10 @@ describe('stache', () => {
             qux: 2,
             add: (val) => val + 10
         });
-        expect(result2).to.equal('17');
+        expectResult(result2, [
+            ['', ''],
+            [17]
+        ]);
     });
 
     it('should support an if directive', () => {
@@ -72,13 +103,19 @@ describe('stache', () => {
             foo: true,
             bar: 'baz'
         });
-        expect(result1.trim()).to.equal('baz');
+        expectResult(result1, [
+            ['', ''],
+            ['baz']
+        ]);
 
         const result2 = tpl({
             foo: false,
             bar: 'baz'
         });
-        expect(result2.trim()).to.equal('');
+        expectResult(result2, [
+            [''],
+            []
+        ]);
     });
 
     it('should support an if-else directive', () => {
@@ -95,14 +132,20 @@ describe('stache', () => {
             bar: 'abc',
             baz: 123
         });
-        expect(result1.trim()).to.equal('abc');
+        expectResult(result1, [
+            ['', ''],
+            ['abc']
+        ]);
 
         const result2 = tpl({
             foo: false,
             bar: 'abc',
             baz: 123
         });
-        expect(result2.trim()).to.equal('123');
+        expectResult(result2, [
+            ['', ''],
+            [123]
+        ]);
     });
 
     it('should support an if-else-if directive', () => {
@@ -122,7 +165,10 @@ describe('stache', () => {
             baz: 5,
             qux: true
         });
-        expect(result1.trim()).to.equal('abc');
+        expectResult(result1, [
+            ['', ''],
+            ['abc']
+        ]);
 
         const result2 = tpl({
             foo: false,
@@ -130,7 +176,10 @@ describe('stache', () => {
             baz: 5,
             qux: true
         });
-        expect(result2.trim()).to.equal('15');
+        expectResult(result2, [
+            ['', ''],
+            [15]
+        ]);
 
         const result3 = tpl({
             foo: false,
@@ -138,7 +187,10 @@ describe('stache', () => {
             baz: 15,
             qux: true
         });
-        expect(result3.trim()).to.equal('true');
+        expectResult(result3, [
+            ['', ''],
+            [true]
+        ]);
     });
 
     it('should support nested if directives', () => {
@@ -159,21 +211,30 @@ describe('stache', () => {
             bar: 10,
             baz: 20
         });
-        expect(result1.trim()).to.equal('empty');
+        expectResult(result1, [
+            [' empty '],
+            []
+        ]);
 
         const result2 = tpl({
             foo: true,
             bar: 10,
             baz: 20
         });
-        expect(result2.trim()).to.equal('10');
+        expectResult(result2, [
+            ['', ''],
+            [10]
+        ]);
 
         const result3 = tpl({
             foo: true,
             bar: 11,
             baz: 20
         });
-        expect(result3.trim()).to.equal('20');
+        expectResult(result3, [
+            ['', ''],
+            [20]
+        ]);
     });
 
     it('should support a complex if directive', () => {
@@ -190,42 +251,60 @@ describe('stache', () => {
             bar: 10,
             baz: 'foo'
         });
-        expect(result1.trim()).to.equal('100');
+        expectResult(result1, [
+            ['', ''],
+            [100]
+        ]);
 
         const result2 = tpl({
             foo: true,
             bar: 11,
             baz: 'fooo'
         });
-        expect(result2.trim()).to.equal('100');
+        expectResult(result2, [
+            ['', ''],
+            [100]
+        ]);
 
         const result3 = tpl({
             foo: true,
             bar: 20,
             baz: 'foo bar'
         });
-        expect(result3.trim()).to.equal('100');
+        expectResult(result3, [
+            ['', ''],
+            [100]
+        ]);
 
         const result4 = tpl({
             foo: false,
             bar: 10,
             baz: 'foo'
         });
-        expect(result4.trim()).to.equal('100');
+        expectResult(result4, [
+            ['', ''],
+            [100]
+        ]);
 
         const result5 = tpl({
             foo: true,
             bar: 5,
             baz: 'foo'
         });
-        expect(result5.trim()).to.equal('200');
+        expectResult(result5, [
+            ['', ''],
+            [200]
+        ]);
 
         const result6 = tpl({
             foo: true,
             bar: 10,
             baz: 'fo'
         });
-        expect(result6.trim()).to.equal('200');
+        expectResult(result6, [
+            ['', ''],
+            [200]
+        ]);
     });
 
     it('should support an each directive', () => {
@@ -238,12 +317,18 @@ describe('stache', () => {
         const result1 = tpl({
             items: [1, 2, 3]
         });
-        expect(collapseWhitespace(result1)).to.equal('1 2 3');
+        expectResult(result1, [
+            ['', '', '', ''],
+            [1, 2, 3]
+        ]);
 
         const result2 = tpl({
             items: ['a', 'b', 'c', 'd', 'e']
         });
-        expect(collapseWhitespace(result2)).to.equal('a b c d e');
+        expectResult(result2, [
+            ['', '', '', '', '', ''],
+            ['a', 'b', 'c', 'd', 'e']
+        ]);
     });
 
     it('should support an each directive with the index', () => {
@@ -256,12 +341,18 @@ describe('stache', () => {
         const result1 = tpl({
             items: [10, 20, 30]
         });
-        expect(collapseWhitespace(result1)).to.equal('0: 10 1: 20 2: 30');
+        expectResult(result1, [
+            ['', ': ', '', ': ', '', ': ', ''],
+            [0, 10, 1, 20, 2, 30]
+        ]);
 
         const result2 = tpl({
             items: ['a', 'b', 'c', 'd', 'e']
         });
-        expect(collapseWhitespace(result2)).to.equal('0: a 1: b 2: c 3: d 4: e');
+        expectResult(result2, [
+            ['', ': ', '', ': ', '', ': ', '', ': ', '', ': ', ''],
+            [0, 'a', 1, 'b', 2, 'c', 3, 'd', 4, 'e']
+        ]);
     });
 
     it('should support nested each directives', () => {
@@ -279,7 +370,10 @@ describe('stache', () => {
                 [10, 20]
             ]
         });
-        expect(collapseWhitespace(result1)).to.equal('1 2 3 10 20');
+        expectResult(result1, [
+            ['', '', '', '', '', ''],
+            [1, 2, 3, 10, 20]
+        ]);
 
         const result2 = tpl({
             items: [
@@ -287,7 +381,10 @@ describe('stache', () => {
                 ['f', 'g']
             ]
         });
-        expect(collapseWhitespace(result2)).to.equal('a b c d e f g');
+        expectResult(result2, [
+            ['', '', '', '', '', '', '', ''],
+            ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+        ]);
     });
 
     it('should support a complex each directive', () => {
@@ -305,7 +402,10 @@ describe('stache', () => {
                 qux: 50
             }
         });
-        expect(collapseWhitespace(result1)).to.equal('foo: 1 bar: 2 baz: 10 qux: 50');
+        expectResult(result1, [
+            ['', ': ', '', ': ', '', ': ', '', ': ', ''],
+            ['foo', 1, 'bar', 2, 'baz', 10, 'qux', 50]
+        ]);
 
         const result2 = tpl({
             data: {
@@ -314,6 +414,48 @@ describe('stache', () => {
                 c: 'baz'
             }
         });
-        expect(collapseWhitespace(result2)).to.equal('a: foo b: bar c: baz');
+        expectResult(result2, [
+            ['', ': ', '', ': ', '', ': ', ''],
+            ['a', 'foo', 'b', 'bar', 'c', 'baz']
+        ]);
+    });
+
+    it('should support a combination of each and if directives', () => {
+        const tpl = stache(`
+            {{each items as item}}
+                {{if item}}
+                    {{'foo'}}
+                {{else}}
+                    {{'bar'}}
+                {{/if}}
+            {{/each}}
+        `);
+
+        const result1 = tpl({
+            items: [
+                true,
+                false,
+                0,
+                ''
+            ]
+        });
+        expectResult(result1, [
+            ['', '', '', '', ''],
+            ['foo', 'bar', 'bar', 'bar']
+        ]);
+
+        const result2 = tpl({
+            items: [
+                NaN,
+                ' ',
+                null,
+                undefined,
+                1
+            ]
+        });
+        expectResult(result2, [
+            ['', '', '', '', '', ''],
+            ['bar', 'foo', 'bar', 'bar', 'foo']
+        ]);
     });
 });
