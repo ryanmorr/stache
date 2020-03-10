@@ -1,6 +1,6 @@
 {
   "name": "@ryanmorr/stache",
-  "description": "Micro mustache-style string templating engine",
+  "description": "Micro mustache-style template parser",
   "version": "0.1.0",
   "license": "Unlicense",
   "author": "Ryan Morr",
