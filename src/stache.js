@@ -1,8 +1,8 @@
 const NEW_LINES_RE = /(\r\n|\r|\n)/g;
 const TEMPLATE_RE = /{{\s*(.+?)\s*}}/g;
-const EACH_RE = /^each (.*) as (.*)$/;
-const IF_RE = /^if (.*)$/;
-const ELSE_IF_RE = /^else if (.*)$/;
+const EACH_RE = /^each\s+(.*)\s+as\s+(.*)$/;
+const IF_RE = /^if\s+(.*)$/;
+const ELSE_IF_RE = /^else if\s+(.*)$/;
 
 export default function stache(source) {
     let tpl;
