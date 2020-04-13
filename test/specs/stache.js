@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import htm from 'htm';
 import stache from '../../src/stache';
 
 describe('stache', () => {
@@ -464,6 +465,132 @@ describe('stache', () => {
         expectResult(result, [
             ['', '', '', '', '', '', ''],
             [0, 25, 5, 20, 1, 3]
+        ]);
+    });
+
+    it('should support tagged template compatible parsers', () => {
+        const html = htm.bind((tag, props, ...children) => {
+            return {tag, props: props || {}, children};
+        });
+
+        function createTemplate(source) {
+            const tpl = stache(source);
+            return (data) => {
+                const [strings, values] = tpl(data);
+                return html(strings, ...values);
+            };
+        }
+
+        const tpl = createTemplate(`
+            <div>
+                {{if foo === 1}}
+                    <em>{{ bar + 100 }}</em>
+                {{else if foo === 2}}
+                    <span>{{ baz.toUpperCase() }}</span>
+                {{/if}}
+            </div>
+            <ul onclick={{handleClick}}>
+                {{each items as item, i}}
+                    <li class="foo">{{i}}: {{item}}</li>
+                {{/each}}
+            </ul>
+        `);
+
+        const handleClick = () => {};
+
+        const vnode1 = tpl({
+            foo: 1,
+            bar: 255,
+            baz: 'abc',
+            handleClick,
+            items:  ['W', 'X', 'Y', 'Z']
+        });
+
+        expect(vnode1).to.deep.equal([
+            {
+                tag: 'div',
+                props: {},
+                children: [
+                    {
+                        tag: 'em',
+                        props: {},
+                        children: [355]
+                    }
+                ]
+            },
+            {
+                tag: 'ul',
+                props: {
+                    onclick: handleClick
+                },
+                children: [
+                    {
+                        tag: 'li',
+                        props: {class: 'foo'},
+                        children: [0, ': ', 'W']
+                    },
+                    {
+                        tag: 'li',
+                        props: {class: 'foo'},
+                        children: [1, ': ', 'X']
+                    },
+                    {
+                        tag: 'li',
+                        props: {class: 'foo'},
+                        children: [2, ': ', 'Y']
+                    },
+                    {
+                        tag: 'li',
+                        props: {class: 'foo'},
+                        children: [3, ': ', 'Z']
+                    }
+                ]
+            },
+        ]);
+
+        const vnode2 = tpl({
+            foo: 2,
+            bar: 123,
+            baz: 'abc',
+            handleClick,
+            items:  [10, 20, 30]
+        });
+
+        expect(vnode2).to.deep.equal([
+            {
+                tag: 'div',
+                props: {},
+                children: [
+                    {
+                        tag: 'span',
+                        props: {},
+                        children: ['ABC']
+                    }
+                ]
+            },
+            {
+                tag: 'ul',
+                props: {
+                    onclick: handleClick
+                },
+                children: [
+                    {
+                        tag: 'li',
+                        props: {class: 'foo'},
+                        children: [0, ': ', 10]
+                    },
+                    {
+                        tag: 'li',
+                        props: {class: 'foo'},
+                        children: [1, ': ', 20]
+                    },
+                    {
+                        tag: 'li',
+                        props: {class: 'foo'},
+                        children: [2, ': ', 30]
+                    }
+                ]
+            },
         ]);
     });
 });
