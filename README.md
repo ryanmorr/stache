@@ -102,7 +102,7 @@ function createTemplate(source) {
     return (data) => {
         const [strings, values] = tpl(data);
         return html(strings, ...values);
-    }
+    };
 }
 
 const tpl = createTemplate('<div id={{id}} onclick={{handler}}>{{content}}</div>');
