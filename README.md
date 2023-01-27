@@ -25,7 +25,7 @@ const tpl = stache('{{firstName}} {{lastName}}');
 
 const [strings, values] = tpl({
     firstName: 'John',
-    lastNamea: 'Doe'
+    lastName: 'Doe'
 });
 
 console.log(strings); //=> ["", " ", ""]
