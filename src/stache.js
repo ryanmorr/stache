@@ -29,11 +29,11 @@ export default function stache(source) {
                                 return `'); } else if (${conditionalElse[1]}) { _sequence.push('`;
                             }
                         } else if (code === 'else') {
-                            return `'); } else { _sequence.push('`;
+                            return `'); } else { _sequence.push('`; // eslint-disable-line quotes
                         } else if (code === '/each') {
-                            return `'); }); _sequence.push('`;
+                            return `'); }); _sequence.push('`; // eslint-disable-line quotes
                         } else if (code === '/if') {
-                            return `'); } _sequence.push('`;
+                            return `'); } _sequence.push('`; // eslint-disable-line quotes
                         }
                         return `'); _strings.push(_sequence.join('')); _sequence = []; _values.push(${code}); _sequence.push('`;
                     })

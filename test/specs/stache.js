@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import htm from 'htm';
-import stache from '../../src/stache';
+import stache from '../../src/stache.js';
 
 describe('stache', () => {
     function normalizeWhitespace(str) {

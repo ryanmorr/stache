@@ -1,7 +1,7 @@
 {
   "extends": "eslint:recommended",
-  "parser": "babel-eslint",
   "parserOptions": {
+    "ecmaVersion": 2020,
     "sourceType": "module"
   },
   "env": {
@@ -10,7 +10,15 @@
     "node": true
   },
   "rules": {
+    "quotes": [
+      "error",
+      "single"
+    ],
     "semi": [
+      "error",
+      "always"
+    ],
+    "eol-last": [
       "error",
       "always"
     ]
