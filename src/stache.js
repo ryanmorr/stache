@@ -8,9 +8,9 @@ export default function stache(source) {
     let tpl;
     return (data) => {
 		if (!tpl) {
-            tpl = new Function(`
+            tpl = new Function('_data', `
                 let _strings = [], _sequence = [], _values = [];
-                let ${Object.keys(data).map((key) => `${key} = this['${key}']`).join(',')};
+                let ${Object.keys(data).map((key) => `${key} = _data['${key}']`).join(',')};
                 _sequence.push('${
                     source.trim().replace(NEW_LINES_RE, '\\n').replace(TEMPLATE_RE, (all, code) => {
                         if (code.startsWith('each')) {
@@ -42,6 +42,6 @@ export default function stache(source) {
                 return [_strings, _values];
             `);
 		}
-		return tpl.call(data);
+		return tpl(data);
 	};
 }
