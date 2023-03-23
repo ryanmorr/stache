@@ -1,14 +1,14 @@
 # stache
 
 [![Version Badge][version-image]][project-url]
-[![Build Status][build-image]][build-url]
 [![License][license-image]][license-url]
+[![Build Status][build-image]][build-url]
 
 > Micro mustache-style template parser
 
 ## Install
 
-Download the [CJS](https://github.com/ryanmorr/stache/raw/master/dist/stache.cjs.js), [ESM](https://github.com/ryanmorr/stache/raw/master/dist/stache.esm.js), [UMD](https://github.com/ryanmorr/stache/raw/master/dist/stache.umd.js) versions or install via NPM:
+Download the [CJS](https://github.com/ryanmorr/stache/raw/master/dist/cjs/stache.js), [ESM](https://github.com/ryanmorr/stache/raw/master/dist/esm/stache.js), [UMD](https://github.com/ryanmorr/stache/raw/master/dist/umd/stache.js) versions or install via NPM:
 
 ``` sh
 npm install @ryanmorr/stache
@@ -32,14 +32,14 @@ console.log(strings); //=> ["", " ", ""]
 console.log(values); //=> ["John", "Doe"]
 ```
 
-In addition to simple value interpolation, loops, if statements, and expressions are also supported:
+In addition to simple value interpolation, loops, if/else statements, and expressions are also supported:
 
 ``` javascript
 const tpl = stache(`
-    {{each items as item, i}}
-        {{if i === 0}}
+    {{each items as item, index}}
+        {{if index === 0}}
             {{ item + 10 }}
-        {{else if i === 1}}
+        {{else if index === 1}}
             {{ item - 10 }}
         {{else}}
             {{ item }}
@@ -91,11 +91,9 @@ You can also combine stache with a tagged template compatible parser for expande
 import htm from 'htm';
 import stache from '@ryanmorr/stache';
 
-const html = htm.bind(createElement);
-
-function createElement(tag, props, ...children) {
-    return {tag, props, children};
-}
+const html = htm.bind((tag, props, ...children) => {
+    return {tag, props: props || {}, children};
+});
 
 function createTemplate(source) {
     const tpl = stache(source);
@@ -121,8 +119,8 @@ console.log(vnode); //=> {tag: 'div', props: {id: 'foo', onclick: handler}, chil
 This project is dedicated to the public domain as described by the [Unlicense](http://unlicense.org/).
 
 [project-url]: https://github.com/ryanmorr/stache
-[version-image]: https://badge.fury.io/gh/ryanmorr%2Fstache.svg
-[build-url]: https://travis-ci.org/ryanmorr/stache
-[build-image]: https://travis-ci.org/ryanmorr/stache.svg
-[license-image]: https://img.shields.io/badge/license-Unlicense-blue.svg
+[version-image]: https://img.shields.io/github/package-json/v/ryanmorr/stache?color=blue&style=flat-square
+[build-url]: https://github.com/ryanmorr/stache/actions
+[build-image]: https://img.shields.io/github/actions/workflow/status/ryanmorr/stache/node.js.yml?style=flat-square
+[license-image]: https://img.shields.io/github/license/ryanmorr/stache?color=blue&style=flat-square
 [license-url]: UNLICENSE
